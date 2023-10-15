@@ -22,6 +22,26 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Threadsafe
  */
 public class Catalog {
+    /**
+     * Constructor.
+     * Creates a new, empty table.
+     */
+    private class Table {
+        private DbFile dbFile;
+        private int tableID;
+        private TupleDesc td;
+        private String name;
+
+        public Table(DbFile dbFile, TupleDesc td, String name) {
+            this.dbFile = dbFile;
+            this.tableID = dbFile.getId();
+            this.td = td;
+            this.name = name;
+        }
+    }
+
+    // field variable
+    private ArrayList<Table> tables;
 
     /**
      * Constructor.
@@ -29,6 +49,7 @@ public class Catalog {
      */
     public Catalog() {
         // some code goes here
+        this.tables = new ArrayList<Table>();
     }
 
     /**
@@ -42,6 +63,10 @@ public class Catalog {
      */
     public void addTable(DbFile file, String name, String pkeyField) {
         // some code goes here
+        // duplicate names?
+        TupleDesc schema = file.getTupleDesc();
+        Table table = new Table(file, schema, name);
+        this.tables.add(table);
     }
 
     public void addTable(DbFile file, String name) {
@@ -65,7 +90,12 @@ public class Catalog {
      */
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
-        return 0;
+        for (Table table: this.tables) {
+            if (Objects.equals(table.name, name)) {
+                return table.tableID;
+            }
+        }
+        throw new NoSuchElementException();
     }
 
     /**
@@ -76,7 +106,12 @@ public class Catalog {
      */
     public TupleDesc getTupleDesc(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        for (Table table: this.tables) {
+            if (table.tableID == tableid) {
+                return table.td;
+            }
+        }
+        throw new NoSuchElementException();
     }
 
     /**
@@ -87,9 +122,16 @@ public class Catalog {
      */
     public DbFile getDatabaseFile(int tableid) throws NoSuchElementException {
         // some code goes here
-        return null;
+        for (Table table: this.tables) {
+            if (table.tableID == tableid) {
+                return table.dbFile;
+            }
+        }
+        throw new NoSuchElementException();
+
     }
 
+    // Do we need this?
     public String getPrimaryKey(int tableid) {
         // some code goes here
         return null;
@@ -102,13 +144,20 @@ public class Catalog {
 
     public String getTableName(int id) {
         // some code goes here
-        return null;
+        for (Table table: this.tables) {
+            if (table.tableID == id) {
+                return table.name;
+            }
+        }
+        throw new NoSuchElementException();
     }
     
     /** Delete all tables from the catalog */
     public void clear() {
         // some code goes here
+        this.tables.clear();
     }
+
     
     /**
      * Reads the schema from a file and creates the appropriate tables in the database.
