@@ -26,6 +26,8 @@ public class Tuple implements Serializable {
     public Tuple(TupleDesc td) {
         // some code goes here
         this.td = td;
+        this.fields = new Field[td.numFields()];
+        this.rid = null;
     }
 
     /**
@@ -33,7 +35,7 @@ public class Tuple implements Serializable {
      */
     public TupleDesc getTupleDesc() {
         // some code goes here
-        return null;
+        return td;
     }
 
     /**
@@ -42,7 +44,7 @@ public class Tuple implements Serializable {
      */
     public RecordId getRecordId() {
         // some code goes here
-        return null;
+        return rid;
     }
 
     /**
@@ -53,6 +55,7 @@ public class Tuple implements Serializable {
      */
     public void setRecordId(RecordId rid) {
         // some code goes here
+        this.rid = rid;
     }
 
     /**
@@ -65,6 +68,7 @@ public class Tuple implements Serializable {
      */
     public void setField(int i, Field f) {
         // some code goes here
+        this.fields[i] = f;
     }
 
     /**
@@ -75,7 +79,7 @@ public class Tuple implements Serializable {
      */
     public Field getField(int i) {
         // some code goes here
-        return null;
+        return (this.fields[i] != null) ? this.fields[i] : null;
     }
 
     /**
@@ -86,10 +90,16 @@ public class Tuple implements Serializable {
      *
      * where \t is any whitespace (except a newline)
      */
+    @Override
     public String toString() {
         // some code goes here
-        throw new UnsupportedOperationException("Implement this");
+        String[] tupleToString = new String[td.numFields()];
+        for (int i = 0; i < tupleToString.length; i++) {
+            tupleToString[i] = fields[i].toString();
+        }
+        return String.join("\t", tupleToString);
     }
+
 
     /**
      * @return
@@ -107,5 +117,6 @@ public class Tuple implements Serializable {
     public void resetTupleDesc(TupleDesc td)
     {
         // some code goes here
+        this.td = td;
     }
 }
