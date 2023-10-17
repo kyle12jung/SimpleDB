@@ -105,11 +105,23 @@ public class Tuple implements Serializable {
      * @return
      *        An iterator which iterates over all the fields of this tuple
      * */
-    public Iterator<Field> fields()
-    {
-        // some code goes here
-        return null;
+    /**
+     * @return An iterator which iterates over all the fields of this tuple
+     */
+    public Iterator<Field> fields() {
+        return new Iterator<Field>() {
+            private int currentIndex = 0;
+            @Override
+            public boolean hasNext() {
+                return currentIndex < fields.length && fields[currentIndex] != null;
+            }
+            @Override
+            public Field next() {
+                return fields[currentIndex++];
+            }
+        };
     }
+
 
     /**
      * reset the TupleDesc of this tuple (only affecting the TupleDesc)

@@ -12,6 +12,7 @@ public class TupleDesc implements Serializable {
     private int numFields;
     private Type [] types;
     private String [] fieldNames;
+    private TDItem [] items;
 
 
     /**
@@ -46,9 +47,18 @@ public class TupleDesc implements Serializable {
      *        An iterator which iterates over all the field TDItems
      *        that are included in this TupleDesc
      * */
-    public Iterator<TDItem> iterator() {
-        // some code goes here
-        return null;
+    public Iterator<TDItem> fields() {
+        return new Iterator<TDItem>() {
+            private int currentIndex = 0;
+            @Override
+            public boolean hasNext() {
+                return currentIndex < numFields;
+            }
+            @Override
+            public TDItem next() {
+                return items[currentIndex++];
+            }
+        };
     }
 
     private static final long serialVersionUID = 1L;
@@ -69,10 +79,12 @@ public class TupleDesc implements Serializable {
         this.numFields = fieldAr.length;
         this.types = new Type[numFields];
         this.fieldNames = new String[numFields];
+        this.items = new TDItem[numFields];
 
         for (int i = 0; i < numFields; i++) {
             this.types[i] = typeAr[i];
             this.fieldNames[i] = fieldAr[i];
+            this.items[i] = new TDItem(typeAr[i], fieldAr[i]);
         }
     }
 
@@ -89,10 +101,12 @@ public class TupleDesc implements Serializable {
         this.numFields = typeAr.length;
         this.types = new Type[numFields];
         this.fieldNames = new String[numFields];
+        this.items = new TDItem[numFields];
 
         for (int i = 0; i < numFields; i++) {
             this.types[i] = typeAr[i];
             this.fieldNames[i] = null;
+            this.items[i] = new TDItem(typeAr[i], fieldNames[i]);
         }
     }
 
@@ -151,14 +165,15 @@ public class TupleDesc implements Serializable {
      *             if no field with a matching name is found.
      */
     public int fieldNameToIndex(String name) throws NoSuchElementException {
-        // some code goes here
-        int index = Arrays.binarySearch(fieldNames, name);
-        if (fieldNames[index] != null) {
-            return index;
-        } else {
-            throw new NoSuchElementException();
+        for (int i = 0; i < fieldNames.length; i++) {
+            if ((name != null && name.equals(fieldNames[i])) || (name == null && fieldNames[i] == null)) {
+                return i;
+            }
         }
+        throw new NoSuchElementException("Field name not found: " + name);
     }
+
+
 
     /**
      * @return The size (in bytes) of tuples corresponding to this TupleDesc.
@@ -190,13 +205,14 @@ public class TupleDesc implements Serializable {
         // first table
         for (int i = 0; i < td1.numFields(); i++) {
             mergedTypes[i] = td1.getFieldType(i);
-            mergedFieldNames[i] = td1.getFieldName(i);
+            mergedFieldNames[i] = td1.getFieldName(i) != null ? td1.getFieldName(i) : null;
         }
         // second table
-        for (int i = td1.numFields(); i < td1.numFields()+td2.numFields(); i++) {
-            mergedTypes[i] = td1.getFieldType(i);
-            mergedFieldNames[i] = td1.getFieldName(i);
+        for (int i = td1.numFields(); i < (td1.numFields() + td2.numFields()); i++) {
+            mergedTypes[i] = td2.getFieldType(i - td1.numFields());
+            mergedFieldNames[i] = td2.getFieldName(i - td1.numFields()) != null ? td2.getFieldName(i - td1.numFields()) : null;
         }
+
         return new TupleDesc(mergedTypes, mergedFieldNames);
     }
 
@@ -214,6 +230,9 @@ public class TupleDesc implements Serializable {
     public boolean equals(Object o) {
         // some code goes here
         if (o == null) return false;
+        if (!(o instanceof TupleDesc)) {
+            return false;
+        }
         TupleDesc td = (TupleDesc) o;
         if (td.numFields() != this.numFields()) return false;
         for (int i = 0; i < this.numFields(); i++) {

@@ -40,6 +40,23 @@ public class Catalog {
         }
     }
 
+    private class TableIdIterator implements Iterator<Integer> {
+        private int currentIndex = 0;
+
+        @Override
+        public boolean hasNext() {
+            return currentIndex < tables.size();
+        }
+
+        @Override
+        public Integer next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            return tables.get(currentIndex++).tableID;
+        }
+    }
+
     // field variable
     private ArrayList<Table> tables;
 
@@ -61,13 +78,29 @@ public class Catalog {
      * conflict exists, use the last table to be added as the table for a given name.
      * @param pkeyField the name of the primary key field
      */
+
     public void addTable(DbFile file, String name, String pkeyField) {
-        // some code goes here
-        // duplicate names?
+
         TupleDesc schema = file.getTupleDesc();
-        Table table = new Table(file, schema, name);
-        this.tables.add(table);
+        Table newTable = new Table(file, schema, name); // Adjust if you're storing the primary key field
+
+        // Find the index of any existing table with the same name.
+        int existingTableIndex = -1; // -1 will signify that no table was found with the same name
+        for (int i = 0; i < this.tables.size(); i++) {
+            if (this.tables.get(i).name.equals(name)) {
+                existingTableIndex = i;
+                break;
+            }
+        }
+
+        // If a table with the same name was found, replace it. Otherwise, add the new table.
+        if (existingTableIndex != -1) {
+            this.tables.set(existingTableIndex, newTable); // This replaces the old table with the new one
+        } else {
+            this.tables.add(newTable); // No table with the same name was found, so we add the new one
+        }
     }
+
 
     public void addTable(DbFile file, String name) {
         addTable(file, name, "");
@@ -139,7 +172,7 @@ public class Catalog {
 
     public Iterator<Integer> tableIdIterator() {
         // some code goes here
-        return null;
+        return new TableIdIterator();
     }
 
     public String getTableName(int id) {
