@@ -73,7 +73,7 @@ public class HeapPage implements Page {
     */
     private int getNumTuples() {        
         // some code goes here
-        return 0;
+        return (int) Math.floor((double) (BufferPool.getPageSize() * 8) / (this.td.getSize() * 8 + 1));
 
     }
 
@@ -84,7 +84,7 @@ public class HeapPage implements Page {
     private int getHeaderSize() {        
         
         // some code goes here
-        return 0;
+        return (int) Math.ceil((double) this.getNumTuples() /8);
                  
     }
     
@@ -118,7 +118,8 @@ public class HeapPage implements Page {
      */
     public HeapPageId getId() {
     // some code goes here
-    throw new UnsupportedOperationException("implement this");
+        return this.pid;
+//    throw new UnsupportedOperationException("implement this");
     }
 
     /**
@@ -287,16 +288,22 @@ public class HeapPage implements Page {
      * Returns the number of empty slots on this page.
      */
     public int getNumEmptySlots() {
-        // some code goes here
-        return 0;
+        int count = 0;
+        for (int i = 0; i < numSlots; i++) {
+            if (!isSlotUsed(i)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
      * Returns true if associated slot on this page is filled.
      */
     public boolean isSlotUsed(int i) {
-        // some code goes here
-        return false;
+        int headerByte = i / 8;
+        int headerBit = i % 8;
+        return (header[headerByte] & (1 << headerBit)) != 0;
     }
 
     /**
@@ -313,7 +320,23 @@ public class HeapPage implements Page {
      */
     public Iterator<Tuple> iterator() {
         // some code goes here
-        return null;
+        return new Iterator<Tuple>() {
+            int numSlots = getNumTuples() - getNumEmptySlots();
+            int currentIndex = 0;
+            @Override
+            public boolean hasNext() {
+                return currentIndex < numSlots;
+            }
+
+            @Override
+            public Tuple next() {
+                while (!isSlotUsed(currentIndex)) {
+                    currentIndex++;
+                }
+                return tuples[currentIndex++];
+            }
+        };
+
     }
 
 }
