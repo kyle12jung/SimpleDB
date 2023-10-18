@@ -25,6 +25,7 @@ public class SeqScan implements OpIterator {
     private int tableid;
     private String tableAlias;
     private DbFileIterator dbFileIterator;
+    private boolean isOpen;
 
 
     /**
@@ -48,6 +49,7 @@ public class SeqScan implements OpIterator {
         this.tableid= tableid;
         this.tableAlias= tableAlias;
         this.dbFileIterator = null;
+        this.isOpen = false;
     }
 
     /**
@@ -84,6 +86,7 @@ public class SeqScan implements OpIterator {
         // some code goes here
         this.tableid = tableid;
         this.tableAlias = tableAlias;
+        this.isOpen = false;
     }
 
     public SeqScan(TransactionId tid, int tableId) {
@@ -94,8 +97,12 @@ public class SeqScan implements OpIterator {
 //    Retrieve the iterator associated with the DbFile using iterator(tid). This DbFileIterator is responsible for iterating through the tuples in the table.
 //    Open the iterator using dbFileIterator.open(). This operation prepares the iterator to begin iterating through the tuples in the table.
     public void open() throws DbException, TransactionAbortedException {
+        if (isOpen) {
+            throw new DbException("");
+        }
         this.dbFileIterator = Database.getCatalog().getDatabaseFile(tableid).iterator(tid);
         this.dbFileIterator.open();
+        this.isOpen = true;
     }
 
     /**
@@ -121,23 +128,31 @@ public class SeqScan implements OpIterator {
 
     public boolean hasNext() throws TransactionAbortedException, DbException {
         // some code goes here
+        if (!isOpen) {
+            throw new IllegalStateException("");
+        }
         return this.dbFileIterator.hasNext();
     }
 
     public Tuple next() throws NoSuchElementException,
             TransactionAbortedException, DbException {
         // some code goes here
+        if (!isOpen) {
+            throw new IllegalStateException("");
+        }
         return this.dbFileIterator.next();
     }
 
     public void close() {
         // some code goes here
-         this.dbFileIterator.close();
+        isOpen = false;
+        this.dbFileIterator.close();
     }
 
     public void rewind() throws DbException, NoSuchElementException,
             TransactionAbortedException {
         // OH
-         this.dbFileIterator.rewind();
+         open();
+         close();
     }
 }

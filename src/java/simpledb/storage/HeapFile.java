@@ -87,7 +87,7 @@ public class HeapFile implements DbFile {
             int offset = ((HeapPageId) pid).getPageNumber() * pageSize;
 
             if ((offset + pageSize) > newFile.length()) {
-                throw new IllegalArgumentException("The page  too long");
+                throw new IllegalArgumentException("The page is too long");
             }
             // read the page data from the file into the byte array
             newFile.seek(offset);
