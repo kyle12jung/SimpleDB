@@ -78,35 +78,28 @@ public class Catalog {
      * conflict exists, use the last table to be added as the table for a given name.
      * @param pkeyField the name of the primary key field
      */
-//    public void addTable(DbFile file, String name, String pkeyField) {
-//        // some code goes here
-//        // duplicate names?
-//        for (Iterator<Table> it = tables.iterator(); it.hasNext(); ) {
-//            Table table = it.next();
-//            if (table.name.equals(name)) {
-//                it.remove();
-//                break;
-//            }
-//        }
-//        TupleDesc schema = file.getTupleDesc();
-//        Table table = new Table(file, schema, name);
-//        this.tables.add(table);
-//    }
+
     public void addTable(DbFile file, String name, String pkeyField) {
         TupleDesc schema = file.getTupleDesc();
-        Table newTable = new Table(file, schema, name); // Adjust if you're storing the primary key field
-
+        Table newTable = new Table(file, schema, name);
+        // Find the index of any existing table with the same ID.
+        for (int i = 0; i < this.tables.size(); i++) {
+            if (this.tables.get(i).tableID == file.getId()) {
+                this.tables.set(i, newTable); // This replaces the old table with the new one
+                return;
+            }
+        }
         // Find the index of any existing table with the same name.
         for (int i = 0; i < this.tables.size(); i++) {
-            System.out.println(this.tables.get(i).name.equals(name));
             if (this.tables.get(i).name.equals(name)) {
                 this.tables.set(i, newTable); // This replaces the old table with the new one
                 return;
             }
         }
-        // If a table with the same name was found, replace it. Otherwise, add the new table.
-       this.tables.add(newTable); // No table with the same name was found, so we add the new one
+        // If a table with the same name was not found, add the new table.
+        this.tables.add(newTable);
     }
+
 
 
     public void addTable(DbFile file, String name) {
@@ -131,7 +124,7 @@ public class Catalog {
     public int getTableId(String name) throws NoSuchElementException {
         // some code goes here
         for (Table table: this.tables) {
-            if (Objects.equals(table.name, name)) {
+            if (table.name.equals(name)) {
                 return table.tableID;
             }
         }
