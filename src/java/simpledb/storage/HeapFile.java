@@ -24,6 +24,57 @@ public class HeapFile implements DbFile {
     private File f;
     private TupleDesc td;
 
+    private class HeapFileIterator implements DbFileIterator {
+        private TransactionId tid;
+        private int currentPageNo;
+        private Iterator<Tuple> tupleIterator;
+
+        public HeapFileIterator(TransactionId tid) {
+            this.tid = tid;
+        }
+
+        @Override
+        public void open() throws DbException, TransactionAbortedException {
+            currentPageNo = 0;
+            HeapPageId pid = new HeapPageId(getId(), currentPageNo);
+            HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_ONLY);
+            tupleIterator = page.iterator();
+        }
+
+        @Override
+        public boolean hasNext() throws DbException, TransactionAbortedException {
+            if (tupleIterator == null) {
+                return false;
+            }
+            if (!tupleIterator.hasNext() && currentPageNo < numPages() - 1) {
+                currentPageNo++;
+                HeapPageId pid = new HeapPageId(getId(), currentPageNo);
+                HeapPage page = (HeapPage) Database.getBufferPool().getPage(tid, pid, Permissions.READ_ONLY);
+                tupleIterator = page.iterator();
+            }
+            return tupleIterator.hasNext();
+        }
+
+        @Override
+        public Tuple next() throws DbException, TransactionAbortedException, NoSuchElementException {
+            if (tupleIterator == null || !tupleIterator.hasNext()) {
+                throw new NoSuchElementException();
+            }
+            return tupleIterator.next();
+        }
+
+        @Override
+        public void rewind() throws DbException, TransactionAbortedException {
+            close();
+            open();
+        }
+
+        @Override
+        public void close() {
+            tupleIterator = null;
+        }
+    }
+
     /**
      * Constructs a heap file backed by the specified file.
      * 
@@ -139,10 +190,7 @@ public class HeapFile implements DbFile {
 
     // see DbFile.java for javadocs
     public DbFileIterator iterator(TransactionId tid) {
-        // some code goes here
-
-
-        return null;
+        return new HeapFileIterator(tid);
     }
 
 }
