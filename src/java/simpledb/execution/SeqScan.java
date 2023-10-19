@@ -155,10 +155,17 @@ public class SeqScan implements OpIterator {
         this.dbFileIterator.close();
     }
 
+<<<<<<< HEAD
     public void rewind() throws DbException, NoSuchElementException,
             TransactionAbortedException {
         close();
         open();
 
+=======
+    public void rewind() throws DbException, NoSuchElementException, TransactionAbortedException {
+        close();
+        open();
+>>>>>>> b3b52df001009f014bfe25dc430e7fec18c4db5d
     }
+
 }
