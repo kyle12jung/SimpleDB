@@ -26,7 +26,9 @@ public class HeapPage implements Page {
     final int numSlots;
 
     byte[] oldData;
-    private final Byte oldDataLock= (byte) 0;
+    private final Byte oldDataLock=  (byte) 0;
+
+
 
     /**
      * Create a HeapPage from a set of bytes of data read from disk.
@@ -58,7 +60,7 @@ public class HeapPage implements Page {
         tuples = new Tuple[numSlots];
         try{
             // allocate and read the actual records of this page
-            for (int i=0; i<tuples.length; i++)
+            for ( int i=0; i<tuples.length; i++)
                 tuples[i] = readNextTuple(dis,i);
         }catch(NoSuchElementException e){
             e.printStackTrace();
@@ -73,7 +75,7 @@ public class HeapPage implements Page {
     */
     private int getNumTuples() {        
         // some code goes here
-        return (int) Math.floor((double) (BufferPool.getPageSize() * 8) / (this.td.getSize() * 8 + 1));
+        return (int) Math.floor( (double) (BufferPool.getPageSize() * 8) / (this.td.getSize() * 8 + 1));
 
     }
 
@@ -92,7 +94,7 @@ public class HeapPage implements Page {
         -- used by recovery */
     public HeapPage getBeforeImage(){
         try {
-            byte[] oldDataRef = null;
+            byte [] oldDataRef = null;
             synchronized(oldDataLock)
             {
                 oldDataRef = oldData;
@@ -301,15 +303,17 @@ public class HeapPage implements Page {
      * Returns true if associated slot on this page is filled.
      */
     public boolean isSlotUsed(int i) {
-        int headerByte = i / 8;
-        int headerBit = i % 8;
-        return (header[headerByte] & (1 << headerBit)) != 0;
+        byte headerbyte = header[i/8];
+        int bit = headerbyte >> (i%8);
+        return (bit & 1) != 0;
+
     }
 
     /**
      * Abstraction to fill or clear a slot on this page.
      */
     private void markSlotUsed(int i, boolean value) {
+
         // some code goes here
         // not necessary for lab1
     }
@@ -323,8 +327,8 @@ public class HeapPage implements Page {
         return new Iterator<Tuple>() {
             int numSlots = getNumTuples() - getNumEmptySlots();
             int currentIndex = 0;
-            @Override
-            public boolean hasNext() {
+          @Override
+          public boolean hasNext() {
                 return currentIndex < numSlots;
             }
 

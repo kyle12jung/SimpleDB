@@ -188,6 +188,7 @@ public class TupleDesc implements Serializable {
         return totalSize;
     }
 
+
     /**
      * Merge two TupleDescs into one, with td1.numFields + td2.numFields fields,
      * with the first td1.numFields coming from td1 and the remaining from td2.

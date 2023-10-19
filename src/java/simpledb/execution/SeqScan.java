@@ -28,6 +28,8 @@ public class SeqScan implements OpIterator {
     private boolean isOpen;
 
 
+    TupleDesc tupleDesc1;
+
     /**
      * Creates a sequential scan over the specified table as a part of the
      * specified transaction.
@@ -87,7 +89,17 @@ public class SeqScan implements OpIterator {
         this.tableid = tableid;
         this.tableAlias = tableAlias;
         this.isOpen = false;
+
+        tupleDesc1 = Database.getCatalog().getTupleDesc(tableid);
+        String [] schemaFieldNames = new String[tupleDesc1.numFields()];
+        Type [] schemaTypes = new Type[tupleDesc1.numFields()];
+        for (int i = 0; i < tupleDesc1.numFields(); i++) {
+            schemaFieldNames[i] = this.tableAlias + "." + tupleDesc1.getFieldName(i);
+            schemaTypes[i] = tupleDesc1.getFieldType(i);
+        }
+        tupleDesc1=  new TupleDesc(schemaTypes, schemaFieldNames);
     }
+
 
     public SeqScan(TransactionId tid, int tableId) {
         this(tid, tableId, Database.getCatalog().getTableName(tableId));
@@ -116,16 +128,10 @@ public class SeqScan implements OpIterator {
      *         prefixed with the tableAlias string from the constructor.
      */
     public TupleDesc getTupleDesc() {
-        TupleDesc schema = Database.getCatalog().getTupleDesc(tableid);
-        String [] schemaFieldNames = new String[schema.numFields()];
-        Type [] schemaTypes = new Type[schema.numFields()];
-        for (int i = 0; i < schema.numFields(); i++) {
-            schemaFieldNames[i] = this.tableAlias + "." + schema.getFieldName(i);
-            schemaTypes[i] = schema.getFieldType(i);
-        }
-        return new TupleDesc(schemaTypes, schemaFieldNames);
-    }
 
+        return tupleDesc1;
+
+    }
     public boolean hasNext() throws TransactionAbortedException, DbException {
         // some code goes here
         if (!isOpen) {
@@ -151,8 +157,8 @@ public class SeqScan implements OpIterator {
 
     public void rewind() throws DbException, NoSuchElementException,
             TransactionAbortedException {
-        // OH
-         open();
-         close();
+        close();
+        open();
+
     }
 }
