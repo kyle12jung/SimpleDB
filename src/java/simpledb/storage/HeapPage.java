@@ -119,7 +119,6 @@ public class HeapPage implements Page {
     public HeapPageId getId() {
     // some code goes here
         return this.pid;
-//    throw new UnsupportedOperationException("implement this");
     }
 
     /**

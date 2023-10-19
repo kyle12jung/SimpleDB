@@ -121,7 +121,6 @@ public class HeapFile implements DbFile {
     public TupleDesc getTupleDesc() {
         // some code goes here
         return this.td;
-//        throw new UnsupportedOperationException("implement this");
     }
 
     // see DbFile.java for javadocs

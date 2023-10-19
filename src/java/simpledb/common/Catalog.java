@@ -164,7 +164,6 @@ public class Catalog {
 
     }
 
-    // Do we need this?
     public String getPrimaryKey(int tableid) {
         // some code goes here
         return null;
